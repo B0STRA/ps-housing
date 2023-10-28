@@ -3,7 +3,7 @@ fx_version 'cerulean'
 game "gta5"
 
 author "Xirvin#0985 and Project Sloth"
-version '1.1.4'
+version '1.0.8'
 
 repository 'Project-Sloth/ps-housing'
 
@@ -25,14 +25,12 @@ client_script {
   'client/cl_property.lua',
   'client/client.lua',
   'client/modeler.lua',
-  'client/migrate.lua'
 }
 
 server_script {
   '@oxmysql/lib/MySQL.lua',
   "server/sv_property.lua",
   "server/server.lua",
-  "server/migrate.lua"
   }
 
 files {

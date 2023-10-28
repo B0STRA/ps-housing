@@ -342,7 +342,6 @@ Modeler = {
             position = offsetPos,
             rotation = newRot,
             type = item.type,
-            movedObject = true
         }
 
         TriggerServerEvent("ps-housing:server:updateFurniture", self.property_id, newFurniture)
@@ -476,30 +475,15 @@ Modeler = {
     end,
 
     HoverIn = function (self, data)
-        if self.HoverObject then
-            local tries = 0
-            while DoesEntityExist(self.HoverObject) do
-                SetEntityAsMissionEntity(self.HoverObject, true, true)
-                DeleteEntity(self.HoverObject)
-                Wait(50)
-                tries = tries + 1
-                if tries > 25 then
-                    break
-                end
-            end
-
-            self.HoverObject = nil
-        end
-
-        local isDoor = false
-        local object = data.object and joaat(data.object) or nil
+        self:HoverOut()
+        local object = data.object
         if object == nil then return end
+
         lib.requestModel(object)
-        if self.HoverObject then return end
-        if data.type == "door" then isDoor = true end
-        self.HoverObject = CreateObject(object, 0.0, 0.0, 0.0, false, false, isDoor)
+        self.HoverObject = CreateObject(GetHashKey(object), 0.0, 0.0, 0.0, false, true, false)
         Modeler.CurrentCameraLookAt =  Freecam:GetTarget(self.HoverDistance)
         local camRot = Freecam:GetRotation()
+
         SetEntityCoords(self.HoverObject, self.CurrentCameraLookAt.x, self.CurrentCameraLookAt.y, self.CurrentCameraLookAt.z)
         FreezeEntityPosition(self.HoverObject, true)
         SetEntityCollision(self.HoverObject, false, false)
@@ -515,19 +499,8 @@ Modeler = {
 
     HoverOut = function (self)
         if self.HoverObject == nil then return end
-        if self.HoverObject and self.HoverObject ~= 0 then
-            local tries = 0
-            while DoesEntityExist(self.HoverObject) do
-                SetEntityAsMissionEntity(self.HoverObject, true, true)
-                DeleteEntity(self.HoverObject)
-                Wait(50)
-                tries = tries + 1
-                if tries > 25 then
-                    break
-                end
-            end
-            self.HoverObject = nil
-        end
+        DeleteEntity(self.HoverObject)
+        self.HoverObject = nil
         self.IsHovering = false
     end,
 

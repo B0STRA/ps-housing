@@ -135,23 +135,10 @@ function Property:StartRaid()
 end
 
 function Property:UpdateFurnitures(furnitures)
-    local newfurnitures = {}
-
-    for i = 1, #furnitures do
-        newfurnitures[i] = {
-            id = furnitures[i].id,
-            label = furnitures[i].label,
-            object = furnitures[i].object,
-            position = furnitures[i].position,
-            rotation = furnitures[i].rotation,
-            type = furnitures[i].type
-        }
-    end
-
-    self.propertyData.furnitures = newfurnitures
+    self.propertyData.furnitures = furnitures
 
     MySQL.update("UPDATE properties SET furnitures = @furnitures WHERE property_id = @property_id", {
-        ["@furnitures"] = json.encode(newfurnitures),
+        ["@furnitures"] = json.encode(furnitures),
         ["@property_id"] = self.property_id
     })
 
@@ -285,18 +272,14 @@ function Property:UpdateOwner(data)
 
     local totalAfterCommission = self.propertyData.price - commission
 
-    if Config.QBManagement then
-        exports['qb-management']:AddMoney(Config.RealtorJobName, totalAfterCommission)
-    else
-        if prevPlayer ~= nil then
-            Framework[Config.Notify].Notify(prevPlayer.PlayerData.source, "Sold Property: " .. self.propertyData.street .. " " .. self.property_id, "success")
-            prevPlayer.Functions.AddMoney('bank', totalAfterCommission, "Sold Property: " .. self.propertyData.street .. " " .. self.property_id)
-        elseif previousOwner then
-            MySQL.Async.execute('UPDATE `players` SET `bank` = `bank` + @price WHERE `citizenid` = @citizenid', {
-                ['@citizenid'] = previousOwner,
-                ['@price'] = totalAfterCommission
-            })
-        end
+    if prevPlayer ~= nil then
+        Framework[Config.Notify].Notify(prevPlayer.PlayerData.source, "Sold Property: " .. self.propertyData.street .. " " .. self.property_id, "success")
+        prevPlayer.Functions.AddMoney('bank', totalAfterCommission, "Sold Property: " .. self.propertyData.street .. " " .. self.property_id)
+    elseif previousOwner then
+        MySQL.Async.execute('UPDATE `players` SET `bank` = `bank` + @price WHERE `citizenid` = @citizenid', {
+            ['@citizenid'] = previousOwner,
+            ['@price'] = totalAfterCommission
+        })
     end
     
     realtor.Functions.AddMoney('bank', commission, "Commission from Property: " .. self.propertyData.street .. " " .. self.property_id)
@@ -312,8 +295,7 @@ function Property:UpdateOwner(data)
     self.propertyData.furnitures = {} -- to be fetched on enter
 
     TriggerClientEvent("ps-housing:client:updateProperty", -1, "UpdateOwner", self.property_id, citizenid)
-    TriggerClientEvent("ps-housing:client:updateProperty", -1, "UpdateForSale", self.property_id, 0)
-    
+
     Framework[Config.Logs].SendLog("**House Bought** by: **"..PlayerData.charinfo.firstname.." "..PlayerData.charinfo.lastname.."** for $"..self.propertyData.price.." from **"..realtor.PlayerData.charinfo.firstname.." "..realtor.PlayerData.charinfo.lastname.."** !")
 
     Framework[Config.Notify].Notify(targetSrc, "You have bought the property for $"..self.propertyData.price, "success")
@@ -526,7 +508,7 @@ RegisterNetEvent("ps-housing:server:showcaseProperty", function(property_id)
     end
 end)
 
-RegisterNetEvent('ps-housing:server:raidProperty', function(property_id)
+RegisterNetEvent('ps-housing:server:raidProperty', function (property_id)
     local src = source
     Debug("Player is trying to raid property", property_id)
 
@@ -537,57 +519,26 @@ RegisterNetEvent('ps-housing:server:raidProperty', function(property_id)
         return 
     end
 
-    local Player = QBCore.Functions.GetPlayer(src)
-    if not Player then return end
-    local PlayerData = Player.PlayerData
+    local PlayerData = GetPlayerData(src)
     local job = PlayerData.job
     local jobName = job.name
     local gradeAllowed = tonumber(job.grade.level) >= Config.MinGradeToRaid
     local onDuty = job.onduty
-    local raidItem = Config.RaidItem
 
-    -- Check if the police officer has the "stormram" item
-    local hasStormRam = (Config.Inventory == "ox" and exports.ox_inventory:Search(src, "count", raidItem) > 0) or Player.Functions.GetItemByName(raidItem)
-
-    local isAllowedToRaid = PoliceJobs[jobName] and onDuty and gradeAllowed
-    if isAllowedToRaid then
-        if hasStormRam then
-            if not property.raiding then
-                local confirmRaid = lib.callback.await('ps-housing:cb:confirmRaid', src, (property.propertyData.street or property.propertyData.apartment) .. " " .. property.property_id, property_id)
-                if confirmRaid == "confirm" then
-                    property:StartRaid(src)
-                    property:PlayerEnter(src)
-                    Framework[Config.Notify].Notify(src, "Raid started", "success")
-
-                    if Config.ConsumeRaidItem then
-                        -- Remove the "stormram" item from the officer's inventory
-                        if Config.Inventory == 'ox' then
-                            exports.ox_inventory:RemoveItem(src, raidItem, 1)
-                        else
-                            Player.Functions.RemoveItem(raidItem, 1)
-                            TriggerClientEvent("inventory:client:ItemBox", src, QBCore.Shared.Items[raidItem], "remove")
-                            TriggerEvent("inventory:server:RemoveItem", src, raidItem, 1)
-                        end
-                    end
-                end
-            else
-                Framework[Config.Notify].Notify(src, "Raid in progress", "success")
+    if jobName == "police" and onDuty and gradeAllowed then
+        if not property.raiding then
+            local confirmRaid = lib.callback.await('ps-housing:cb:confirmRaid', src, (property.propertyData.street or property.propertyData.apartment) .. " " .. property.property_id, property_id)
+            if confirmRaid == "confirm" then
+                property:StartRaid(src)
                 property:PlayerEnter(src)
+                Framework[Config.Notify].Notify(src, "Raid started", "success")
             end
         else
-            Framework[Config.Notify].Notify(src, "You need a stormram to perform a raid", "error")
-        end
-    else
-        if not PoliceJobs[jobName] then
-            Framework[Config.Notify].Notify(src, "Only police officers are permitted to perform raids", "error")
-        elseif not onDuty then
-            Framework[Config.Notify].Notify(src, "You must be onduty before performing a raid", "error")
-        elseif not gradeAllowed then
-            Framework[Config.Notify].Notify(src, "You must be a higher rank before performing a raid", "error")
+            Framework[Config.Notify].Notify(src, "Raid in progress", "success")
+            property:PlayerEnter(src)
         end
     end
 end)
-
 
 
 lib.callback.register('ps-housing:cb:getFurnitures', function(source, property_id)
@@ -681,7 +632,7 @@ RegisterNetEvent("ps-housing:server:buyFurniture", function(property_id, items, 
 
     Framework[Config.Notify].Notify(src, "You bought furniture for $" .. price, "success")
 
-    Framework[Config.Logs].SendLog("**Player ".. GetPlayerName(src) .. "** bought furniture for **$" .. price .. "**")
+    Framework[Config.Logs].SendLog("**Player ".. GetPlayerName(src) .. "** bought furniture for **$" .. price"**")
 
     Debug("Player bought furniture for $" .. price, "by: " .. GetPlayerName(src))
 end)
@@ -699,7 +650,7 @@ RegisterNetEvent("ps-housing:server:removeFurniture", function(property_id, item
 
     for k, v in pairs(currentFurnitures) do
         if v.id == itemid then
-            table.remove(currentFurnitures, k)
+            currentFurnitures[k] = nil
             break
         end
     end

@@ -84,15 +84,7 @@ AddEventHandler("ps-housing:server:registerProperty", function (propertyData) --
 
         Wait(1000)
 
-        local query = "SELECT skin FROM playerskins WHERE citizenid = ?"
-        local result = MySQL.Sync.fetchAll(query, {propertyData.owner})
-
-        if result and result[1] then
-            Debug("Player: " .. propertyData.owner .. " skin already exists!")
-        else
-            TriggerClientEvent("qb-clothes:client:CreateFirstCharacter", src)
-            Debug("Player: " .. propertyData.owner .. " is creating a new character!")
-        end
+        TriggerClientEvent("qb-clothes:client:CreateFirstCharacter", src)
 
         Framework[Config.Notify].Notify(src, "Open radial menu for furniture menu and place down your stash and clothing locker.", "info")
 
@@ -112,7 +104,7 @@ lib.callback.register("ps-housing:cb:GetOwnedApartment", function(source, cid)
     else
         local src = source
         local Player = QBCore.Functions.GetPlayer(src)
-        local result = MySQL.query.await('SELECT * FROM properties WHERE owner_citizenid = ? AND apartment IS NOT NULL AND apartment <> ""', { Player.PlayerData.citizenid })
+        local result = MySQL.query.await('SELECT * FROM apartments WHERE owner_citizenid = ? AND apartment IS NOT NULL AND apartment <> ""', { Player.PlayerData.citizenid })
         if result[1] ~= nil then
             return result[1]
         end

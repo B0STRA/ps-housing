@@ -10,18 +10,17 @@ ps-housing owes its existence to the exceptional coding expertise of [Xirvin#098
 ![image](https://github.com/Project-Sloth/ps-housing/assets/82112471/655d9bb6-6c6d-4676-b4e0-f4368f3325a9)
 ![image](https://github.com/Project-Sloth/ps-housing/assets/82112471/fc632975-c2f6-41fb-89cd-a984679f1a41)
 
-# Preview [ps-realtor](https://github.com/Project-Sloth/ps-realtor)
-![image](https://github.com/Project-Sloth/ps-realtor/assets/82112471/24e4018a-cb97-42b0-81df-3b0236c7e2dc)
-![image](https://github.com/Project-Sloth/ps-realtor/assets/82112471/4d8ece54-ace1-4ffc-b8fb-90274bc94e72)
-![image](https://github.com/Project-Sloth/ps-realtor/assets/82112471/188d259c-4c0f-4c91-905c-bf9b826cc518)
-![image](https://github.com/Project-Sloth/ps-realtor/assets/82112471/9e033984-45f2-449d-ba6c-bb8742ac08bd)
-![image](https://github.com/Project-Sloth/ps-realtor/assets/82112471/0dd078b8-a941-4316-b9e1-26c696023139)
+# Preview [bl-realtor](https://github.com/Byte-Labs-Project/bl-realtor)
+![image](https://github.com/Byte-Labs-Project/bl-realtor/assets/82112471/0fd5aa8b-7305-4239-b6fd-f82b682b83c7)
+![image](https://github.com/Byte-Labs-Project/bl-realtor/assets/82112471/8e702104-92f2-4696-a59e-e3ea89b975b5)
+![image](https://github.com/Byte-Labs-Project/bl-realtor/assets/82112471/f1a4ddfd-b091-4062-a994-e8181974ee49)
+![image](https://github.com/Byte-Labs-Project/bl-realtor/assets/82112471/fadc1cab-ceea-462a-8b37-f7fec10f415b)
 
 # Usage
 - Players can decorate their houses and apartments with a full selection of furniture and decorations (included a wide variety of custom housing props)
 - Provides support for housing and apartments and is a full replacement for qb-apartments and qb-housing
   - When a player first spawns after enabling ps-housing, they will have to choose an apartment. Once they spawn in the stashitems from their previous qb-apartment will be migrated to their new apartment stash.
-- Allows players to purchase and list houses for sale through `ps-realtor` and the realtor job
+- Allows players to purchase and list houses for sale through `bl-realtor` and the realtor job
 - Houses come with personal garages
 - Houses and apartments come with personal wardrobes and stashes
 - Players can share keys to their houses and apartments with other players
@@ -54,18 +53,15 @@ Dynamic Doors will turn placed doors into actual working doors, Instead of them 
 
 ### Preview
 
-https://github.com/complexza/ps-housing/assets/74205343/72cfc135-2f78-42b3-a540-45f02567b6d7
+https://github.com/complexza/ps-housing/assets/74205343/fef28197-8e95-4b5f-aba8-b3e5409456d8
 
-https://github.com/complexza/ps-housing/assets/74205343/0ff26e7f-1341-45fc-8fc6-d65421dec0b2
+https://github.com/complexza/ps-housing/assets/74205343/196bb25e-75b9-42f6-b1c3-fe86ad477544
 
 ### Setup
 - You will need to set the `Config.DynamicDoors = true`
 - You will have to add this convar into your server.cfg `setr game_enableDynamicDoorCreation "true"`
 
 > Note: The convar has to be in your server.cfg in order for the doors to be dynamic!
-
-### Shell Support
-* [K4MB1](https://github.com/Project-Sloth/ps-housing/wiki/K4MB1-Shells-Support-&-Offsets)
 
 # Important
 
@@ -74,8 +70,6 @@ https://github.com/complexza/ps-housing/assets/74205343/0ff26e7f-1341-45fc-8fc6-
 * This entire README is meant for compatibility with default QBCore scripts. If you have different scripts, you'll need to adjust them for compatibility yourself. Refrain from asking us how to circumvent paid scripts that can't be adjusted for ps-housing support. Instead, request their support for ps-housing - this script is fully open source for that reason. Any inquiries related to this be ignored. 
 
 # Installation
-## Kamaryn has created an amazing setup video located [here.](https://www.youtube.com/watch?v=6YKkl20BevE)
-
 ## PAY ATTENTION TO EACH STEP. DO NOT SKIP ANY. 
 
 1. Find the following events in `qb-multicharacter` and change in server/main.lua event to: 
@@ -265,42 +259,11 @@ end)
 
 7. Delete `qb-apartments/config.lua` references in `qb-spawn`, `qb-multicharacter` and `qb-phone` fxmanifest.lua (and any other scripts that may reference it).
 
-8. Ensure ps-realtor above ps-housing.
+8. Ensure bl-realtor above ps-housing.
 
 9. In your server.cfg, add `ensure ox_lib` above all other resources
 
 10. Install the dependencies below.
-
-## Migrating houses and apartments from qb-houses and qb-apartments
-
-1. From a client run the `migratehouses` command to automatically convert all houses from qb-houses. It will print a message to the console once complete.
-   **The `migratehouses` command MUST be run from a client in order to retrieve street and region data for each house**
-
-2. From a client or server console run the `migrateapartments` command to automatically convert all apartments from qb-apartments. It will print a message to the console once complete.
-
-## Resolving the "Foreign key constraint is incorrectly formed" Issue
-
-If you come across an error such as `Foreign key constraint is incorrectly formed` while importing the `properties.sql` into your database, follow these steps to fix it.
-
-1. Open your database in HeidiSQL.
-2. Right-click on your database name and select "Edit."
-3. Locate the database collation setting take a note of it. 
-4. You will need to format the `properties.sql` file to match your database collation.
-
-If your database collation is set to `utf8mb4_general_ci`, modify the last line of the `properties.sql` file using VSCode or in HeidiSQL's query tab to the following:
-
-```sql
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-```
-This adjustment ensures that `properties.sql` file's character set and collation match that of your database, effectively resolving the issue.
-
-## Item Limits System
-
-1. Choose an item you want to limit under `Config.Furniture` in under `shared/config.lua`
-2. Add `["max"] = 3` or the number of your choice to the item (see example below)
-```lua
-{ ["object"] = "v_res_r_figcat", ["price"] = 300, ["max"] = 2, ["label"] = "Fig Cat" },
-```
 
 ## Logs System Setup
 
@@ -313,26 +276,24 @@ This adjustment ensures that `properties.sql` file's character set and collation
 
 > This system only supports qb-core for now.
 
-## Add new Shells
-
-1. Copy the files from the shell into the `ps-housing/stream` folder.
-2. Add the new shell into the Config.Shells in `ps-housing/shared/config.lua`.
-
 # Dependency
-1. [ps-realtor](https://github.com/Project-Sloth/ps-realtor)
-2. [fivem-freecam](https://github.com/Deltanic/fivem-freecam)
+1. [bl-realtor](https://github.com/Byte-Labs-Project/bl-realtor)
+2. [five-freecam](https://github.com/Deltanic/fivem-freecam)
 3. [ox_lib](https://github.com/overextended/ox_lib/releases) - Use the latest release. If you do not use the latest release, MAKE SURE TO BUILD THE UI. Find their docs [here](https://overextended.dev/ox_lib#building-the-ui) on how to build the UI.
 4. [ox_target](https://github.com/overextended/ox_target) or [qb-target](https://github.com/qbcore-framework/qb-target) - Change in [Config](https://github.com/Project-Sloth/ps-housing/blob/3c0f197b6d639f13235598393c84aac8d23d5f7a/shared/config.lua#L8), default is qb-target.
 
 ## For reference your server.cfg should be ensured like below:
-* We highly recommend making a folder named [ps-housing] and add `ps-realtor`, `fivem-freecam`, `ox_lib`, `ps-core`, `ps-housing` inside the folder.
+* We highly recommend making a folder named [ps-housing] and add `bl-realtor`, `fivem-freecam`, `ox_lib`, `ps-core`, `ps-housing` inside the folder.
   
 ```
 ensure ox_lib
 ensure ps-housing
-ensure ps-realtor
+ensure bl-realtor
 ensure fivem-freecam
 ```
+
+# To Do
+- Remake Realtor UI
 
 # Notes
 - If a player is in their apartment/house and an admin does a "Bring to me" function, they will not see the player nor will the player see anyone else. This is because the player is still in their own unique routing bucket. **Workaround**: To fix this, the player must go back into their apartment and leave on their own. 
